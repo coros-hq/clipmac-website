@@ -244,6 +244,11 @@ const fine = [
 		</footer>
 
 		<script>
+			import { inject } from '@vercel/analytics';
+			inject();
+		</script>
+
+		<script>
 			const $ = (id) => document.getElementById(id);
 			const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
