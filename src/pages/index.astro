@@ -41,7 +41,7 @@ const fine = [
 	<body>
 		<a class="skip" href="#main">Skip to content</a>
 
-		<div class="hero">
+		<div class="topbar">
 			<header class="bar">
 				<a class="brand" href="/" aria-label="ClipMac home">
 					<img src="/icon.png" width="38" height="38" alt="" />
@@ -51,10 +51,15 @@ const fine = [
 					<a href="#secrets">Secrets</a>
 					<a href="#screenshots">Screenshots</a>
 					<a href="#fine-print">Privacy</a>
-					<a class="gh" href={REPO}>GitHub</a>
+					<a class="gh" href={REPO}>
+						<svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+						GitHub
+					</a>
 				</nav>
 			</header>
+		</div>
 
+		<div class="hero">
 			<main id="main">
 				<section class="hero-grid" aria-labelledby="h1">
 					<div class="hero-copy">
@@ -215,12 +220,14 @@ const fine = [
 			<div class="wrap">
 				<h2 id="fp-t">The honest fine print.</h2>
 				<ul class="fine">
-					{fine.map((f) => (
-						<li><strong>{f.h}</strong><span>{f.t}</span></li>
+					{fine.map((f, i) => (
+						<li><span class="fine-n" aria-hidden="true">{i + 1}</span><strong>{f.h}</strong><span>{f.t}</span></li>
 					))}
 				</ul>
-				<p class="cmd-label">If macOS blocks the first open:</p>
-				<pre class="cmd"><code>xattr -cr /Applications/ClipMac.app</code></pre>
+				<div class="fix">
+					<p class="cmd-label">If macOS blocks the first open:</p>
+					<pre class="cmd"><code>xattr -cr /Applications/ClipMac.app</code></pre>
+				</div>
 			</div>
 		</section>
 
@@ -467,7 +474,7 @@ const fine = [
 				color-scheme: light;
 			}
 			* { box-sizing: border-box; margin: 0; }
-			html { scroll-behavior: smooth; scrollbar-color: var(--violet) var(--lilac); }
+			html { scroll-behavior: smooth; scroll-padding-top: 5rem; scrollbar-color: var(--violet) var(--lilac); }
 			body { background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); -webkit-font-smoothing: antialiased; }
 			::selection { background: var(--lime); color: var(--ink); }
 			a { color: inherit; text-underline-offset: 0.2em; }
@@ -484,15 +491,17 @@ const fine = [
 			.hero::before, .hero::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
 			.hero::before { width: 46rem; height: 46rem; right: -14rem; top: -16rem; background: #7a5cff; }
 			.hero::after { width: 22rem; height: 22rem; left: -9rem; bottom: -9rem; background: var(--violet-deep); }
+			.topbar { position: fixed; inset: 0 0 auto 0; z-index: 30; background: var(--violet); color: #fff; transition: box-shadow 0.2s; box-shadow: 0 1px 0 rgba(255,255,255,0.12), 0 6px 20px rgba(21,17,46,0.18); }
 			.bar, main { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding-inline: 1.5rem; }
-			.bar { display: flex; align-items: center; justify-content: space-between; padding-top: 1.4rem; }
+			.bar { display: flex; align-items: center; justify-content: space-between; padding-block: 0.85rem; }
+			.hero { padding-top: 4.6rem; }
 			.brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; font: 800 1.45rem/1 var(--display); letter-spacing: -0.02em; }
 			.brand img { border-radius: 10px; }
 			.bar nav { display: flex; align-items: center; gap: 1.8rem; font-weight: 500; font-size: 0.975rem; }
 			.bar nav a { text-decoration: none; opacity: 0.9; }
 			.bar nav a:hover { opacity: 1; text-decoration: underline; }
-			.bar nav .gh { background: rgba(255,255,255,0.16); padding: 0.5rem 1rem; border-radius: 999px; opacity: 1; }
-			.bar nav .gh:hover { background: rgba(255,255,255,0.26); text-decoration: none; }
+			.bar nav .gh { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--lime); color: var(--ink); font-weight: 700; padding: 0.55rem 1.1rem; border-radius: 999px; opacity: 1; box-shadow: 0 2px 0 rgba(21,17,46,0.35); transition: transform 0.15s; }
+			.bar nav .gh:hover { transform: translateY(-1px); text-decoration: none; }
 
 			.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 28rem); gap: 3.5rem; align-items: center; padding-block: 3.2rem 5rem; }
 			h1 { font-size: clamp(3.1rem, 6.6vw, 5.6rem); line-height: 0.96; }
@@ -640,12 +649,14 @@ const fine = [
 			.keys li:hover kbd { transform: translateY(-3px); }
 			.note { margin-top: 2rem; color: var(--ink-2); max-width: 42rem; }
 
-			.fine { list-style: none; padding: 0; margin-top: 2.5rem; display: grid; gap: 1.6rem; max-width: 52rem; }
-			.fine li { display: grid; gap: 0.2rem; }
-			.fine strong { font: 800 1.35rem/1.2 var(--display); letter-spacing: -0.02em; }
-			.fine span { color: var(--ink-2); }
-			.cmd-label { margin-top: 2rem; font-weight: 700; }
-			.cmd { margin-top: 0.5rem; background: var(--ink); color: var(--lime); border-radius: 14px; padding: 1.1rem 1.3rem; overflow-x: auto; max-width: 52rem; font: 500 1rem/1.5 var(--mono); }
+			.fine { list-style: none; padding: 0; margin-top: 2.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 1.1rem; }
+			.fine li { display: grid; align-content: start; gap: 0.5rem; background: #fff; border-radius: 20px; padding: 1.4rem 1.5rem 1.5rem; box-shadow: 0 4px 0 rgba(21,17,46,0.12); }
+			.fine strong { font: 800 1.25rem/1.2 var(--display); letter-spacing: -0.02em; }
+			.fine li > span:not(.fine-n) { color: var(--ink-2); font-size: 0.975rem; line-height: 1.55; }
+			.fine-n { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; background: var(--violet); color: #fff; font: 800 0.9rem/1 var(--display); margin-bottom: 0.3rem; }
+			.fix { margin-top: 1.1rem; background: var(--ink); color: #fff; border-radius: 20px; padding: 1.4rem 1.5rem; }
+			.cmd-label { font-weight: 700; }
+			.cmd { margin-top: 0.7rem; background: rgba(255,255,255,0.08); color: var(--lime); border-radius: 12px; padding: 1rem 1.2rem; overflow-x: auto; font: 500 1rem/1.5 var(--mono); }
 
 			.close { text-align: center; overflow: clip; position: relative; }
 			.close .wrap { display: flex; flex-direction: column; align-items: center; }
