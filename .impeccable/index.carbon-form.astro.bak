@@ -1,0 +1,644 @@
+---
+const RELEASES = 'https://github.com/coros-hq/clipmac/releases/latest';
+const REPO = 'https://github.com/coros-hq/clipmac';
+
+const lineItems = [
+	{ item: 'Text', does: 'Everything you copy, searchable. Filter by All, Favorites, Text or Images; sort by newest, oldest, largest or smallest.', kept: '24 hours' },
+	{ item: 'Images', does: 'Kept at full size. Drag one straight into Finder, Mail, Slack, Figma or a browser, or Copy as File, or export PNG and JPEG.', kept: '24 hours' },
+	{ item: 'Favorites', does: 'Press ⌘D to keep a clip. Favorites never expire, and can’t be deleted or cleared until you unfavorite them.', kept: 'Until you say' },
+	{ item: 'Secrets', does: 'API keys, tokens, passwords, JWTs, private keys and credentials in URLs are hidden in text, and inside screenshots by on-device OCR.', kept: 'Hidden' },
+	{ item: 'Code', does: 'Detected automatically, shown with syntax highlighting and line numbers. Format JS, TS, JSON, CSS, SCSS, Less, HTML, Markdown, YAML or Rust, then copy it without changing the saved clip.', kept: 'Untouched' },
+	{ item: 'Menu bar', does: 'Your latest copies, one click to copy again. Close the window and ClipMac keeps running.', kept: 'Always on' },
+];
+
+const keys = [
+	{ k: ['↑', '↓'], d: 'Move through clips' },
+	{ k: ['⏎'], d: 'Copy the selected clip' },
+	{ k: ['⌘', 'F'], alt: ['/'], d: 'Search' },
+	{ k: ['Esc'], d: 'Clear search, close panels' },
+	{ k: ['⌘', 'D'], d: 'Favorite or unfavorite' },
+	{ k: ['⌘', 'E'], d: 'Edit the selected image' },
+	{ k: ['⌘', '⌫'], d: 'Delete the selected clip' },
+];
+
+const fine = [
+	{ h: 'Everything stays on your Mac.', t: 'ClipMac makes no network requests. Its libraries are bundled inside the app.' },
+	{ h: 'Your history is not encrypted.', t: 'It lives in ~/Library/Application Support/com.clipmac.app/. Anything you haven’t favorited is deleted after 24 hours.' },
+	{ h: 'Secret detection is best effort.', t: 'OCR can miss small, blurry or stylized text, and the detector knows common formats, not every possible one. It does not cover credit card numbers, emails or phone numbers. Don’t make it your only protection.' },
+	{ h: 'Not notarized yet.', t: 'Builds are ad-hoc signed, so the first open shows a Gatekeeper warning: right-click the app and choose Open, or run the command below. macOS also asks for Screen Recording again after each update.' },
+	{ h: 'Not on the Mac App Store.', t: 'The transparent, vibrant window uses a private macOS API, which the App Store doesn’t allow.' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ClipMac, clipboard history and screenshots for macOS</title>
+		<meta name="description" content="ClipMac is a free, open-source clipboard manager and screenshot tool for macOS. It remembers what you copy for 24 hours, hides secrets automatically, and keeps everything on your Mac." />
+		<meta name="theme-color" content="#1a37a0" />
+		<meta property="og:title" content="ClipMac: copy it once, keep it a day" />
+		<meta property="og:description" content="Free, open-source clipboard history and screenshots for macOS. Secrets hidden automatically. Nothing leaves your Mac." />
+		<meta property="og:type" content="website" />
+		<link rel="icon" type="image/png" href="/icon.png" />
+		<link rel="apple-touch-icon" href="/icon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Courier+Prime:wght@400;700&family=Reenie+Beanie&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<a class="skip" href="#main">Skip to content</a>
+
+		<header class="bar">
+			<a class="brand" href="/" aria-label="ClipMac home">
+				<img src="/icon.png" width="40" height="40" alt="" />
+				<span>ClipMac</span>
+			</a>
+			<nav aria-label="Primary">
+				<a href="#line-items">Features</a>
+				<a href="#fine-print">Privacy</a>
+				<a href={REPO}>GitHub</a>
+			</nav>
+		</header>
+
+		<main id="main">
+			<!-- ───── Triplicate stack: the hero ───── -->
+			<section class="stack" aria-labelledby="top-title">
+				<div class="sheet sheet-white copy-1">
+					<div class="hero-grid">
+						<div class="hero-copy">
+							<h1 id="top-title">Copy it once.<br />Keep it a&nbsp;day.</h1>
+							<p class="lead">
+								ClipMac is a clipboard manager and screenshot tool for macOS. It lives in your menu bar,
+								remembers what you copy for 24 hours, and blacks out your secrets before they travel.
+							</p>
+							<div class="cta-row">
+								<a class="stamp-btn" href={RELEASES}>Download for Mac</a>
+								<p class="cta-note">
+									Free and open source · v1.0.1 · <a href="#fine-print">first launch: right-click → Open</a>
+								</p>
+							</div>
+						</div>
+
+						<dl class="fields" aria-label="Form header">
+							<div><dt>No.</dt><dd class="serial" id="serial">000101</dd></div>
+							<div><dt>Date</dt><dd class="hand" id="today">today</dd></div>
+							<div><dt>From</dt><dd class="hand">Your Mac</dd></div>
+							<div><dt>To</dt><dd class="hand">Your Mac</dd></div>
+							<div><dt>Kept</dt><dd class="hand">24 hours</dd></div>
+						</dl>
+					</div>
+
+					<div class="write">
+						<label for="clip">Write on the top sheet</label>
+						<div class="write-line">
+							<input id="clip" type="text" value="API_KEY=sk_live_9fA2xK81mQ0zT7vBn4" autocomplete="off" spellcheck="false" maxlength="140" />
+						</div>
+						<div class="presets" role="group" aria-label="Try an example">
+							<button type="button" data-fill="Standup moved to 3pm, room 4B">A plain note</button>
+							<button type="button" data-fill="API_KEY=sk_live_9fA2xK81mQ0zT7vBn4">An API key</button>
+							<button type="button" data-fill="postgres://admin:hunter2@db.internal:5432/app">A password in a URL</button>
+						</div>
+					</div>
+				</div>
+
+				<div class="sheet sheet-canary copy-2">
+					<div class="band">
+						<h2 class="band-title">Copy 2<span>Kept for 24 hours</span></h2>
+						<div class="band-body">
+							<p class="entry" id="entry-kept" aria-live="polite"></p>
+							<div class="band-side">
+								<span class="timer" id="timer" aria-label="Time until this clip expires">24:00:00</span>
+								<button class="reveal" id="reveal" type="button" aria-pressed="false">Show</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="sheet sheet-pink copy-3">
+					<div class="band">
+						<h2 class="band-title">Copy 3<span>Leaves ClipMac: drag, export, menu bar</span></h2>
+						<div class="band-body">
+							<p class="entry" id="entry-out" aria-live="polite"></p>
+							<div class="band-side">
+								<span class="verdict hand" id="verdict">No secrets found</span>
+							</div>
+						</div>
+						<div class="stamp" id="stamp" aria-hidden="true">Hidden</div>
+					</div>
+				</div>
+				<p class="stack-note">Illustrative demo. It runs in your browser and nothing you type is sent anywhere.</p>
+			</section>
+
+			<!-- ───── Line items ───── -->
+			<section class="sheet sheet-white block" id="line-items" aria-labelledby="li-title">
+				<h2 id="li-title" class="section-title">Line items</h2>
+				<p class="section-lead">Everything on this form is in version 1.0.1. Nothing on it is a promise.</p>
+				<table class="ledger">
+					<thead>
+						<tr><th scope="col">Item</th><th scope="col">What ClipMac does</th><th scope="col">Kept</th></tr>
+					</thead>
+					<tbody>
+						{lineItems.map((r) => (
+							<tr>
+								<th scope="row">{r.item}</th>
+								<td>{r.does}</td>
+								<td class="hand kept">{r.kept}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</section>
+
+			<!-- ───── Screenshots ───── -->
+			<section class="sheet sheet-canary block shots" aria-labelledby="sc-title">
+				<div class="shots-copy">
+					<h2 id="sc-title" class="section-title">Screenshots, finished</h2>
+					<p>
+						Capture a selection, a window or the whole screen at full Retina resolution as a lossless PNG.
+						Set a delay, show the cursor, keep the window shadow. Give each mode its own global shortcut.
+					</p>
+					<p>
+						Then dress it up in the built-in editor: a background, padding, corner radius, shadow, zoom and aspect ratio.
+						Save a copy or overwrite. Keys and tokens in the picture are found by on-device OCR and blacked out.
+					</p>
+				</div>
+
+				<div class="editor" aria-label="Editor preview">
+					<div class="stage" id="stage" data-bg="sunset">
+						<div class="shot" id="shot">
+							<div class="shot-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+							<pre class="shot-code" aria-label="Sample code with the token blacked out"><code>const client = connect(&#123;
+  host: "db.internal",
+  token: <span class="bar">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>,
+&#125;);</code></pre>
+						</div>
+					</div>
+					<div class="controls">
+						<fieldset>
+							<legend>Background</legend>
+							<div class="swatches">
+								<button type="button" class="sw sw-sunset" data-bg="sunset" aria-pressed="true" aria-label="Sunset gradient"></button>
+								<button type="button" class="sw sw-ocean" data-bg="ocean" aria-pressed="false" aria-label="Ocean gradient"></button>
+								<button type="button" class="sw sw-mint" data-bg="mint" aria-pressed="false" aria-label="Mint gradient"></button>
+								<button type="button" class="sw sw-ink" data-bg="ink" aria-pressed="false" aria-label="Solid ink"></button>
+								<button type="button" class="sw sw-clear" data-bg="clear" aria-pressed="false" aria-label="Transparent"></button>
+							</div>
+						</fieldset>
+						<label class="range">Padding <input type="range" id="pad" min="8" max="56" value="32" /></label>
+						<label class="range">Corner radius <input type="range" id="rad" min="0" max="28" value="12" /></label>
+						<p class="editor-note">Illustrative preview of the editor’s controls.</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- ───── Keys ───── -->
+			<section class="sheet sheet-white block" aria-labelledby="k-title">
+				<h2 id="k-title" class="section-title">Hands stay on the keys</h2>
+				<ul class="keys">
+					{keys.map((r) => (
+						<li>
+							<span class="caps">
+								{r.k.map((c) => <kbd>{c}</kbd>)}
+								{r.alt && <span class="or">or</span>}
+								{r.alt && r.alt.map((c) => <kbd>{c}</kbd>)}
+							</span>
+							<span class="key-d">{r.d}</span>
+						</li>
+					))}
+				</ul>
+				<p class="keys-note">
+					Screenshot shortcuts are yours to choose in the camera panel. Avoid <kbd>⌘</kbd><kbd>⇧</kbd><kbd>3</kbd>, <kbd>4</kbd> and <kbd>5</kbd>, which macOS keeps for itself.
+				</p>
+			</section>
+
+			<!-- ───── Fine print ───── -->
+			<section class="sheet sheet-pink block" id="fine-print" aria-labelledby="fp-title">
+				<h2 id="fp-title" class="section-title">The fine print, in plain print</h2>
+				<ul class="fine">
+					{fine.map((f) => (
+						<li><strong>{f.h}</strong> {f.t}</li>
+					))}
+				</ul>
+				<p class="cmd-label">If macOS blocks the first open:</p>
+				<pre class="cmd"><code>xattr -cr /Applications/ClipMac.app</code></pre>
+			</section>
+
+			<!-- ───── Detach here ───── -->
+			<section class="detach" aria-labelledby="dl-title">
+				<div class="cut" aria-hidden="true">
+					<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>
+					<span>Detach here</span>
+				</div>
+				<div class="coupon sheet-canary">
+					<div>
+						<h2 id="dl-title">Keep your copy.</h2>
+						<p>ClipMac 1.0.1 for macOS, Apple Silicon and Intel. Free and open source under the MIT license.</p>
+					</div>
+					<a class="stamp-btn big" href={RELEASES}>Download for Mac</a>
+				</div>
+			</section>
+		</main>
+
+		<footer class="foot">
+			<p>© ClipMac contributors · MIT License</p>
+			<nav aria-label="Footer">
+				<a href={REPO}>Source on GitHub</a>
+				<a href={`${REPO}/blob/main/SECURITY.md`}>Security</a>
+				<a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Contribute</a>
+			</nav>
+		</footer>
+
+		<script>
+			const $ = (id) => document.getElementById(id);
+			const input = $('clip');
+			const kept = $('entry-kept');
+			const out = $('entry-out');
+			const reveal = $('reveal');
+			const stamp = $('stamp');
+			const verdict = $('verdict');
+			const timer = $('timer');
+			const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			$('today').textContent = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+			// Illustrative detector: a few common formats, not the app's full rule set.
+			const RULES = [
+				/\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9_]{8,}/g,
+				/\bgh[pousr]_[A-Za-z0-9]{16,}/g,
+				/\bAKIA[0-9A-Z]{12,}/g,
+				/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]*/g,
+				/(?<=(?:password|passwd|pwd|secret|token|api[_-]?key)\s*[=:]\s*)\S+/gi,
+				/(?<=:\/\/[^\s:@\/]+:)[^\s@\/]+(?=@)/g,
+			];
+
+			function split(text) {
+				const marks = [];
+				for (const re of RULES) for (const m of text.matchAll(re)) marks.push([m.index, m.index + m[0].length]);
+				marks.sort((a, b) => a[0] - b[0]);
+				const merged = [];
+				for (const m of marks) {
+					const last = merged[merged.length - 1];
+					if (last && m[0] <= last[1]) last[1] = Math.max(last[1], m[1]);
+					else merged.push(m.slice());
+				}
+				const parts = [];
+				let at = 0;
+				for (const [s, e] of merged) {
+					if (s > at) parts.push({ t: text.slice(at, s), secret: false });
+					parts.push({ t: text.slice(s, e), secret: true });
+					at = e;
+				}
+				if (at < text.length) parts.push({ t: text.slice(at), secret: false });
+				return parts;
+			}
+
+			let shown = false;
+			let hadSecret = false;
+
+			function paint() {
+				const text = input.value;
+				const parts = split(text);
+				const has = parts.some((p) => p.secret);
+				kept.replaceChildren();
+				out.replaceChildren();
+				if (!text) {
+					kept.append(Object.assign(document.createElement('span'), { className: 'empty', textContent: 'Nothing copied yet' }));
+					out.append(Object.assign(document.createElement('span'), { className: 'empty', textContent: 'Nothing leaves' }));
+				}
+				for (const p of parts) {
+					if (!p.secret || shown) {
+						kept.append(document.createTextNode(p.t));
+						out.append(document.createTextNode(p.t));
+					} else {
+						kept.append(document.createTextNode('••••••••'));
+						const bar = document.createElement('span');
+						bar.className = 'bar';
+						bar.style.width = Math.min(Math.max(p.t.length, 6), 40) + 'ch';
+						bar.setAttribute('role', 'img');
+						bar.setAttribute('aria-label', 'hidden secret');
+						out.append(bar);
+					}
+				}
+				reveal.disabled = !has;
+				reveal.hidden = !has;
+				verdict.textContent = !text ? '' : has ? (shown ? 'Shown: you asked to see it' : 'Secret hidden') : 'No secrets found';
+				stamp.classList.toggle('on', has && !shown);
+				if (has && !hadSecret && !reduce) {
+					stamp.classList.remove('slam');
+					void stamp.offsetWidth;
+					stamp.classList.add('slam');
+				}
+				hadSecret = has;
+			}
+
+			input.addEventListener('input', () => { shown = false; reveal.setAttribute('aria-pressed', 'false'); reveal.textContent = 'Show'; paint(); });
+			reveal.addEventListener('click', () => {
+				shown = !shown;
+				reveal.setAttribute('aria-pressed', String(shown));
+				reveal.textContent = shown ? 'Hide' : 'Show';
+				paint();
+			});
+			document.querySelectorAll('.presets button').forEach((b) =>
+				b.addEventListener('click', () => {
+					input.value = b.dataset.fill;
+					hadSecret = false;
+					shown = false;
+					reveal.setAttribute('aria-pressed', 'false');
+					reveal.textContent = 'Show';
+					paint();
+				})
+			);
+
+			// 24-hour clock on the kept copy.
+			const end = Date.now() + 24 * 3600 * 1000;
+			const pad2 = (n) => String(n).padStart(2, '0');
+			function tick() {
+				const s = Math.max(0, Math.round((end - Date.now()) / 1000));
+				timer.textContent = `${pad2(Math.floor(s / 3600))}:${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}`;
+			}
+			tick();
+			setInterval(tick, 1000);
+
+			paint();
+
+			// Editor preview controls.
+			const stage = $('stage');
+			const shot = $('shot');
+			document.querySelectorAll('.sw').forEach((b) =>
+				b.addEventListener('click', () => {
+					stage.dataset.bg = b.dataset.bg;
+					document.querySelectorAll('.sw').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+				})
+			);
+			$('pad').addEventListener('input', (e) => stage.style.setProperty('--pad', e.target.value + 'px'));
+			$('rad').addEventListener('input', (e) => shot.style.setProperty('--rad', e.target.value + 'px'));
+		</script>
+
+		<style is:global>
+			:root {
+				--blue: #1a37a0;
+				--blue-deep: #122778;
+				--paper: #f8f7f2;
+				--canary: #f6d94c;
+				--pink: #f4a9bd;
+				--ink: #14151a;
+				--ink-2: #3a3c48;
+				--ballpoint: #1a37a0;
+				--red: #b3200f;
+				--rule: rgba(20, 21, 26, 0.22);
+
+				--display: 'Big Shoulders Display', 'Arial Narrow', sans-serif;
+				--type: 'Courier Prime', 'Courier New', monospace;
+				--hand: 'Reenie Beanie', 'Bradley Hand', cursive;
+
+				--ease: cubic-bezier(0.16, 1, 0.3, 1);
+				color-scheme: light;
+			}
+
+			* { box-sizing: border-box; margin: 0; }
+			html { scroll-behavior: smooth; scrollbar-color: var(--canary) var(--blue-deep); }
+			body {
+				background: var(--blue);
+				color: var(--paper);
+				font: 400 1.0625rem/1.6 var(--type);
+				-webkit-font-smoothing: antialiased;
+				min-height: 100vh;
+			}
+			::selection { background: var(--canary); color: var(--ink); }
+			a { color: inherit; text-underline-offset: 0.2em; }
+			:focus-visible { outline: 3px solid var(--canary); outline-offset: 3px; }
+			.sheet :focus-visible { outline-color: var(--ballpoint); }
+			.skip { position: absolute; left: -999px; top: 0; background: var(--canary); color: var(--ink); padding: 0.6rem 1rem; z-index: 10; }
+			.skip:focus { left: 0; }
+
+			/* ───── Header ───── */
+			.bar {
+				max-width: 1180px; margin: 0 auto; padding: 1.25rem 1.25rem 0.75rem;
+				display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+			}
+			.brand { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; font: 800 1.9rem/1 var(--display); letter-spacing: 0.02em; text-transform: uppercase; }
+			.brand img { border-radius: 9px; }
+			.bar nav { display: flex; gap: 1.6rem; font: 700 1.05rem/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; }
+			.bar nav a { text-decoration: none; padding: 0.4rem 0; border-bottom: 2px solid transparent; }
+			.bar nav a:hover { border-bottom-color: var(--canary); }
+
+			main { max-width: 1180px; margin: 0 auto; padding: 0 1.25rem 3rem; display: flex; flex-direction: column; gap: 3.5rem; }
+
+			/* ───── Paper ───── */
+			.sheet { color: var(--ink); box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 22px 36px -18px rgba(5, 12, 50, 0.75); position: relative; }
+			.sheet-white { background: var(--paper); }
+			.sheet-canary { background: var(--canary); }
+			.sheet-pink { background: var(--pink); }
+			.hand { font-family: var(--hand); color: var(--ballpoint); font-size: 1.9rem; line-height: 1; }
+
+			/* ───── Hero stack ───── */
+			.stack { margin-top: 1.2rem; }
+			.copy-1 { padding: 2rem 3rem 1.6rem; z-index: 3; }
+			.copy-2 { margin: -2px 14px 0; z-index: 2; }
+			.copy-3 { margin: -2px 28px 0; z-index: 1; }
+			.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: 3rem; align-items: start; }
+
+			h1 {
+				font: 900 clamp(3.4rem, 8vw, 5.2rem)/0.88 var(--display);
+				text-transform: uppercase; letter-spacing: -0.01em;
+				color: var(--ink); text-wrap: balance;
+			}
+			.lead { margin-top: 1.1rem; max-width: 36rem; color: var(--ink-2); font-size: 1.1875rem; }
+			.cta-row { margin-top: 1.3rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.6rem; }
+			.cta-note { font-size: 0.9375rem; color: var(--ink-2); max-width: 20rem; line-height: 1.45; }
+
+			.stamp-btn {
+				display: inline-block; text-decoration: none; cursor: pointer;
+				font: 800 1.7rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.06em;
+				color: var(--paper); background: var(--ballpoint);
+				padding: 0.95rem 1.7rem 0.85rem; border: 3px solid var(--ballpoint);
+				outline: 2px solid var(--ballpoint); outline-offset: 3px;
+				transition: background-color 0.18s var(--ease), color 0.18s var(--ease), transform 0.18s var(--ease);
+			}
+			.stamp-btn:hover { background: var(--paper); color: var(--ballpoint); }
+			.stamp-btn:active { transform: translateY(2px); }
+			.stamp-btn:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+			.stamp-btn.big { font-size: 2.2rem; padding: 1.15rem 2.2rem 1.05rem; white-space: nowrap; }
+
+			.fields { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+			.fields > div { display: grid; grid-template-columns: 4rem 1fr; align-items: baseline; border-bottom: 1px solid var(--rule); padding: 0.55rem 0 0.35rem; }
+			.fields dt { font: 700 0.95rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+			.fields dd { margin: 0; }
+			.serial { font: 700 1.6rem/1 var(--type); color: var(--red); letter-spacing: 0.08em; }
+
+			.write { margin-top: 1.5rem; padding-top: 0.9rem; border-top: 2px dashed var(--rule); }
+			.write label { font: 700 1.05rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+			.write-line { margin-top: 0.4rem; border-bottom: 2px solid var(--ink); }
+			.write input {
+				width: 100%; background: transparent; border: 0; border-radius: 0; padding: 0.15rem 0 0.3rem;
+				font: 400 2.5rem/1.1 var(--hand); color: var(--ballpoint); caret-color: var(--red);
+			}
+			.write input:focus { outline: none; background: rgba(246, 217, 76, 0.28); }
+			.write-line:focus-within { border-bottom-color: var(--ballpoint); }
+			.presets { margin-top: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+			.presets button, .reveal {
+				font: 700 0.95rem/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase;
+				color: var(--ink); background: transparent; border: 2px solid var(--ink); padding: 0.55rem 0.9rem 0.45rem; cursor: pointer;
+				transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+			}
+			.presets button:hover, .reveal:hover { background: var(--ink); color: var(--paper); }
+			.reveal[aria-pressed='true'] { background: var(--ink); color: var(--canary); }
+			.reveal[hidden] { display: none; }
+
+			.band { padding: 1rem 3rem 1.1rem; position: relative; }
+			.sheet-canary.copy-2 .band { border-top: 2px dashed rgba(20,21,26,0.35); }
+			.band-title { font: 800 1.3rem/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; align-items: baseline; }
+			.band-title span { font-weight: 700; color: var(--ink-2); letter-spacing: 0.1em; font-size: 1.05rem; }
+			.band-body { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; margin-top: 0.7rem; }
+			.entry { min-width: 0; max-width: 100%; font: 700 1.4rem/1.45 var(--type); overflow-wrap: anywhere; min-height: 2.1rem; }
+			.entry .empty { font-weight: 400; color: var(--ink-2); }
+			.band-side { display: flex; align-items: center; gap: 1rem; flex-shrink: 0; }
+			.timer { font: 700 1.3rem/1 var(--type); font-variant-numeric: tabular-nums; color: var(--red); letter-spacing: 0.06em; }
+			.verdict { font-size: 1.9rem; }
+			.bar-redact, .entry .bar, .shot-code .bar { display: inline-block; background: var(--ink); height: 1.05em; vertical-align: -0.15em; }
+			.entry .bar { max-width: 100%; }
+			.shot-code .bar { width: 9ch; }
+
+			.stamp {
+				position: absolute; right: 15rem; top: 50%; translate: 0 -62%; rotate: -9deg;
+				font: 900 3.4rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.08em;
+				color: var(--red); border: 5px solid var(--red); padding: 0.2rem 1.1rem 0.1rem; border-radius: 4px;
+				opacity: 0; pointer-events: none; mix-blend-mode: multiply;
+			}
+			.stamp.on { opacity: 0.88; }
+			.stamp.slam { animation: slam 0.55s var(--ease) both; }
+			@keyframes slam {
+				0% { opacity: 0; scale: 2.2; }
+				55% { opacity: 0.95; scale: 0.94; }
+				100% { opacity: 0.88; scale: 1; }
+			}
+			.stack-note { margin-top: 1rem; font-size: 0.875rem; color: rgba(248, 247, 242, 0.82); }
+
+			/* ───── Blocks ───── */
+			.block { padding: 3rem 3rem 3.2rem; }
+			.section-title {
+				font: 900 clamp(2.6rem, 5.6vw, 4.4rem)/0.92 var(--display); text-transform: uppercase; letter-spacing: -0.005em; text-wrap: balance;
+			}
+			.section-lead { margin-top: 0.9rem; color: var(--ink-2); max-width: 38rem; }
+
+			.ledger { width: 100%; margin-top: 2rem; border-collapse: collapse; border-top: 3px solid var(--ink); }
+			.ledger th, .ledger td { text-align: left; vertical-align: baseline; padding: 1.1rem 1rem 1rem 0; border-bottom: 1px solid var(--rule); }
+			.ledger thead th { font: 700 0.95rem/1 var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); padding-block: 0.7rem; border-bottom: 2px solid var(--ink); }
+			.ledger tbody th { font: 800 1.7rem/1 var(--display); text-transform: uppercase; letter-spacing: 0.04em; width: 9.5rem; }
+			.ledger td:nth-child(2) { max-width: 40rem; }
+			.ledger .kept { width: 11rem; white-space: nowrap; font-size: 2.1rem; }
+
+			.shots { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 3rem; align-items: start; }
+			.shots-copy p { margin-top: 1.1rem; max-width: 30rem; }
+			.shots-copy p:first-of-type { margin-top: 1.6rem; }
+			.editor { display: grid; gap: 1.1rem; }
+			.stage {
+				--pad: 32px; aspect-ratio: 4 / 3; display: grid; place-items: center; padding: var(--pad); overflow: hidden;
+				border: 2px solid var(--ink); transition: background 0.3s var(--ease);
+			}
+			.stage[data-bg='sunset'] { background: linear-gradient(135deg, #ff7a59, #b3200f 55%, #7a1f5c); }
+			.stage[data-bg='ocean'] { background: linear-gradient(135deg, #3aa0ff, #1a37a0 60%, #0e1d5c); }
+			.stage[data-bg='mint'] { background: linear-gradient(135deg, #b8f2c9, #3fbf9a 60%, #1a7f78); }
+			.stage[data-bg='ink'] { background: var(--ink); }
+			.stage[data-bg='clear'] { background: conic-gradient(#e6e3d3 25%, #fbfaf4 0 50%, #e6e3d3 0 75%, #fbfaf4 0) 0 0 / 20px 20px; }
+			.shot {
+				--rad: 12px; width: 100%; background: #16181f; color: #e8ebf5; border-radius: var(--rad); padding: 0.9rem 1.1rem 1.1rem;
+				box-shadow: 0 18px 36px -10px rgba(0, 0, 0, 0.55), 0 2px 6px rgba(0, 0, 0, 0.3); transition: border-radius 0.1s linear;
+			}
+			.shot-dots { display: flex; gap: 6px; margin-bottom: 0.7rem; }
+			.shot-dots i { width: 10px; height: 10px; border-radius: 50%; background: #5a5f72; }
+			.shot-code { font: 400 0.95rem/1.55 var(--type); white-space: pre-wrap; color: #cfd5ea; }
+			.shot-code .bar { background: #000; box-shadow: 0 0 0 1px #3a3f52; }
+			.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; align-items: end; }
+			.controls fieldset { grid-column: 1 / -1; border: 0; padding: 0; min-width: 0; }
+			.controls legend, .range { font: 700 1rem/1 var(--display); letter-spacing: 0.12em; text-transform: uppercase; }
+			.swatches { margin-top: 0.6rem; display: flex; gap: 0.6rem; }
+			.sw { width: 2.6rem; height: 2.6rem; border: 2px solid var(--ink); cursor: pointer; padding: 0; }
+			.sw[aria-pressed='true'] { outline: 3px solid var(--ink); outline-offset: 3px; }
+			.sw-sunset { background: linear-gradient(135deg, #ff7a59, #b3200f 55%, #7a1f5c); }
+			.sw-ocean { background: linear-gradient(135deg, #3aa0ff, #1a37a0 60%, #0e1d5c); }
+			.sw-mint { background: linear-gradient(135deg, #b8f2c9, #3fbf9a 60%, #1a7f78); }
+			.sw-ink { background: var(--ink); }
+			.sw-clear { background: conic-gradient(#e6e3d3 25%, #fbfaf4 0 50%, #e6e3d3 0 75%, #fbfaf4 0) 0 0 / 10px 10px; }
+			.range { display: grid; gap: 0.6rem; }
+			input[type='range'] { width: 100%; accent-color: var(--ink); height: 1.4rem; }
+			.editor-note { grid-column: 1 / -1; font-size: 0.875rem; color: var(--ink-2); }
+
+			.keys { list-style: none; padding: 0; margin-top: 2rem; border-top: 3px solid var(--ink); display: grid; grid-template-columns: 1fr 1fr; column-gap: 3rem; }
+			.keys li { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.95rem 0; border-bottom: 1px solid var(--rule); }
+			.caps { display: inline-flex; align-items: center; gap: 0.35rem; flex-shrink: 0; order: 2; }
+			.key-d { order: 1; }
+			kbd {
+				font: 700 1rem/1 var(--type); min-width: 2.1rem; text-align: center; padding: 0.5rem 0.55rem 0.4rem;
+				background: var(--paper); border: 2px solid var(--ink); border-bottom-width: 4px; border-radius: 6px; color: var(--ink);
+			}
+			.or { font: 700 0.95rem/1 var(--display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2); padding: 0 0.2rem; }
+			.keys-note { margin-top: 1.4rem; color: var(--ink-2); max-width: 44rem; }
+			.keys-note kbd { font-size: 0.8rem; min-width: 1.6rem; padding: 0.3rem 0.4rem 0.2rem; border-bottom-width: 3px; margin-right: 2px; }
+
+			.fine { list-style: none; padding: 0; margin-top: 2rem; border-top: 3px solid var(--ink); max-width: 52rem; }
+			.fine li { padding: 1rem 0; border-bottom: 1px solid rgba(20, 21, 26, 0.3); }
+			.fine strong { font: 800 1.35rem/1.2 var(--display); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 0.25rem; }
+			.cmd-label { margin-top: 1.6rem; font-weight: 700; }
+			.cmd { margin-top: 0.5rem; background: var(--ink); color: var(--canary); padding: 1rem 1.2rem; overflow-x: auto; max-width: 52rem; font-size: 1rem; }
+
+			/* ───── Detach ───── */
+			.detach { margin-top: 1.5rem; }
+			.cut { display: flex; align-items: center; gap: 0.9rem; font: 800 1.1rem/1 var(--display); letter-spacing: 0.22em; text-transform: uppercase; color: var(--paper); }
+			.cut::after { content: ''; flex: 1; border-top: 3px dashed rgba(248, 247, 242, 0.7); }
+			.coupon {
+				margin-top: 1rem; padding: 3rem; color: var(--ink); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2rem;
+				box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 22px 36px -18px rgba(5, 12, 50, 0.75);
+			}
+			.coupon h2 { font: 900 clamp(3rem, 7.5vw, 6rem)/0.88 var(--display); text-transform: uppercase; }
+			.coupon p { margin-top: 1rem; max-width: 30rem; font-weight: 700; }
+
+			.foot { max-width: 1180px; margin: 0 auto; padding: 1.5rem 1.25rem 3rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; font-size: 0.9375rem; }
+			.foot nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem; }
+
+			/* ───── Entrance: the sheets settle once ───── */
+			@media (prefers-reduced-motion: no-preference) {
+				.copy-1, .copy-2, .copy-3 { animation: settle 0.8s var(--ease) both; }
+				.copy-2 { animation-delay: 0.12s; }
+				.copy-3 { animation-delay: 0.24s; }
+				@keyframes settle { from { opacity: 0; translate: 0 22px; } to { opacity: 1; translate: 0 0; } }
+			}
+			@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+			/* ───── Narrow ───── */
+			@media (max-width: 900px) {
+				.hero-grid { grid-template-columns: 1fr; gap: 2rem; }
+				.shots { grid-template-columns: 1fr; gap: 2rem; }
+				.keys { grid-template-columns: 1fr; }
+			}
+			@media (max-width: 640px) {
+				body { font-size: 1rem; }
+				.bar nav a:not(:last-child) { display: none; }
+				main { gap: 2.5rem; padding-inline: 0.75rem; }
+				.bar { padding-inline: 0.75rem; }
+				.copy-1 { padding: 1.6rem 1.25rem 1.5rem; }
+				.copy-2 { margin-inline: 8px; }
+				.copy-3 { margin-inline: 16px; }
+				.band { padding: 1.1rem 1.25rem 1.2rem; }
+				.band-body { flex-direction: column; align-items: stretch; gap: 0.9rem; }
+				.stamp { right: 1rem; top: auto; bottom: 0.8rem; translate: 0 0; font-size: 2.2rem; }
+				.fields > div { grid-template-columns: 5rem 1fr; }
+				.keys-note, .fine, .cmd { max-width: 100%; }
+				.cut { letter-spacing: 0.12em; }
+				.write input { font-size: 2rem; }
+				.block { padding: 2rem 1.25rem 2.2rem; }
+				.stamp-btn, .stamp-btn.big { font-size: 1.5rem; white-space: normal; text-align: center; }
+				.ledger, .ledger tbody, .ledger tr, .ledger th, .ledger td { display: block; width: auto; }
+				.ledger thead { position: absolute; left: -999px; }
+				.ledger tr { padding: 1rem 0; border-bottom: 1px solid var(--rule); }
+				.ledger th, .ledger td { border: 0; padding: 0.15rem 0; }
+				.ledger tbody th { width: auto; }
+				.ledger .kept { width: auto; font-size: 1.9rem; }
+				.controls { grid-template-columns: 1fr; }
+				.coupon { padding: 1.75rem 1.25rem; }
+			}
+		</style>
+	</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "title": "Choose the visual world for ClipMac",
+  "question": "The roll assigned the Triplicate Carbon Form. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Triplicate Carbon Form",
+      "kicker": "THE ROLL",
+      "lineage": "NCR carbonless triplicate forms: white, canary, pink copies",
+      "thesis": "Copy is the whole product, so the page is a form that copies itself: whatever is written on the top sheet appears on the sheets beneath.",
+      "palette": ["#f6f4ee", "#f5d84a", "#f2a6b8", "#1d3fa8", "#c8281e"],
+      "materials": ["NCR paper stack", "carbon-blue ballpoint", "red serial numbering", "perforated stub"],
+      "viewport": "A full-bleed invoice-style form: ClipMac in oversized stamped type, serial No. 000001 in red, a ballpoint-blue download line, and three offset sheets (white, canary, pink) fanning beneath so the text visibly copies down. A VOID stamp slams across the secret field.",
+      "risk": "Carbon-copy nostalgia reads novelty if the form grid is not strictly governed.",
+      "raised": [{"from": "Split-flap board", "raise": "Fixed columns and strict ruled rows: the form grid never moves, only the filled-in entries do."}]
+    },
+    {
+      "id": "model-pick",
+      "label": "Redacted Dossier",
+      "kicker": "IMPECCABLE'S PICK",
+      "lineage": "declassified FOIA documents with black redaction bars",
+      "thesis": "The secret-hiding feature is the page: a typed memo whose keys and tokens are already blacked out, click to reveal.",
+      "palette": ["#e9e4d6", "#111111", "#b32a1f"],
+      "materials": ["typewriter ink", "black marker bars", "rubber stamp"],
+      "viewport": "A typed memo about ClipMac with redaction bars across the sensitive lines; one bar lifts on hover.",
+      "risk": "Familiar paper-and-ink territory; tilts toward the cream-and-red calibration rut."
+    },
+    {
+      "id": "challenger-splitflap",
+      "label": "Split-Flap Board",
+      "verdict": "competitive",
+      "lineage": "rail concourse departure boards",
+      "thesis": "Your clipboard as a live departures board: rows ranked by time, expiring at 24h.",
+      "palette": ["#111111", "#f4f4f0", "#f5a623"],
+      "materials": ["matte flaps", "brushed steel"],
+      "viewport": "A board whose rows flip through recent copies; a secret row flips to bullets.",
+      "case": "Holds product clarity (a list ranked by time); loses on audience, since boards read as transit not Mac.",
+      "risk": "Dark-and-amber is a familiar tech look."
+    },
+    {
+      "id": "challenger-memphis",
+      "label": "Memphis Showroom",
+      "verdict": "declined",
+      "lineage": "Memphis Milano",
+      "case": "Loses both axes: playful but says nothing about copying or privacy.",
+      "kept": "Total pattern commitment per object."
+    },
+    {
+      "id": "challenger-ascii",
+      "label": "ASCII Scene",
+      "verdict": "declined",
+      "lineage": "live ASCII render",
+      "case": "Tool monoculture; excludes the any-Mac-user audience.",
+      "kept": "One strict grid as the entire composition."
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A clean Mac-app landing page: headline, app window screenshot, feature grid, download.",
+    "palette": ["#ffffff", "#111827", "#0a84ff"],
+    "materials": ["clean grid", "app window"],
+    "viewport": "Headline and Download button beside a menu-bar app window.",
+    "risk": "Indistinguishable from every other Mac utility."
+  },
+  "steer": true
+}

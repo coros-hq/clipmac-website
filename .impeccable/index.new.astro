@@ -1,0 +1,675 @@
+---
+const RELEASES = 'https://github.com/coros-hq/clipmac/releases/latest';
+const REPO = 'https://github.com/coros-hq/clipmac';
+
+const keys = [
+	{ k: ['↑', '↓'], d: 'Move through clips' },
+	{ k: ['⏎'], d: 'Copy the selected clip' },
+	{ k: ['⌘', 'F'], d: 'Search (or press /)' },
+	{ k: ['Esc'], d: 'Clear search, close panels' },
+	{ k: ['⌘', 'D'], d: 'Favorite or unfavorite' },
+	{ k: ['⌘', 'E'], d: 'Edit the selected image' },
+	{ k: ['⌘', '⌫'], d: 'Delete the selected clip' },
+];
+
+const fine = [
+	{ h: 'Everything stays on your Mac.', t: 'ClipMac makes no network requests. Its libraries are bundled inside the app.' },
+	{ h: 'History is not encrypted.', t: 'It lives in ~/Library/Application Support/com.clipmac.app/. Anything you haven’t favorited is deleted after 24 hours.' },
+	{ h: 'Secret detection is best effort.', t: 'OCR can miss small, blurry or stylized text, and the detector knows common formats, not every possible one. It doesn’t cover credit card numbers, emails or phone numbers. Don’t make it your only protection.' },
+	{ h: 'Not notarized yet.', t: 'Builds are ad-hoc signed, so the first open shows a Gatekeeper warning. Right-click the app and choose Open, or run the command below. macOS also asks for Screen Recording again after each update.' },
+	{ h: 'Not on the Mac App Store.', t: 'The transparent, vibrant window uses a private macOS API, which the App Store doesn’t allow.' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>ClipMac, clipboard history and screenshots for macOS</title>
+		<meta name="description" content="ClipMac is a free, open-source clipboard manager and screenshot tool for macOS. It remembers what you copy for 24 hours, hides secrets automatically, and keeps everything on your Mac." />
+		<meta name="theme-color" content="#5a3cf0" />
+		<meta property="og:title" content="ClipMac: your clipboard, with a memory" />
+		<meta property="og:description" content="Free, open-source clipboard history and screenshots for macOS. Secrets hidden automatically. Nothing leaves your Mac." />
+		<meta property="og:type" content="website" />
+		<link rel="icon" type="image/png" href="/icon.png" />
+		<link rel="apple-touch-icon" href="/icon.png" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@500&family=Onest:wght@400;500;700&display=swap" rel="stylesheet" />
+	</head>
+	<body>
+		<a class="skip" href="#main">Skip to content</a>
+
+		<div class="hero">
+			<header class="bar">
+				<a class="brand" href="/" aria-label="ClipMac home">
+					<img src="/icon.png" width="38" height="38" alt="" />
+					<span>ClipMac</span>
+				</a>
+				<nav aria-label="Primary">
+					<a href="#secrets">Secrets</a>
+					<a href="#screenshots">Screenshots</a>
+					<a href="#fine-print">Privacy</a>
+					<a class="gh" href={REPO}>GitHub</a>
+				</nav>
+			</header>
+
+			<main id="main">
+				<section class="hero-grid" aria-labelledby="h1">
+					<div class="hero-copy">
+						<h1 id="h1">Your clipboard, with a&nbsp;memory.</h1>
+						<p class="lead">
+							ClipMac lives in your Mac’s menu bar. It remembers everything you copy for 24 hours, hides your
+							secrets automatically, and turns screenshots into something you’re happy to share.
+						</p>
+						<div class="cta-row">
+							<a class="btn btn-lime" href={RELEASES}>
+								<svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16.5h12"/></svg>
+								Download for Mac
+							</a>
+							<p class="cta-note">Free and open source · v1.0.1<br /><a href="#fine-print">First launch: right-click → Open</a></p>
+						</div>
+					</div>
+
+					<div class="desk" aria-label="Interactive demo of the ClipMac menu-bar window">
+						<div class="menubar" aria-hidden="true">
+							<span class="mb-apple"></span>
+							<span class="mb-item mb-on">
+								<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4" width="11" height="13" rx="2.5"/><path d="M7.5 4V3.2c0-.7.5-1.2 1.2-1.2h2.6c.7 0 1.2.5 1.2 1.2V4"/></svg>
+							</span>
+							<span class="mb-item">Wi-Fi</span>
+							<span class="mb-item" id="mb-time">9:41</span>
+						</div>
+
+						<div class="pop">
+							<form class="pop-add" id="add" autocomplete="off">
+								<label for="clip" class="sr">Copy something</label>
+								<input id="clip" type="text" placeholder="Copy something here…" maxlength="120" />
+								<button type="submit" class="btn-copy">Copy</button>
+							</form>
+							<div class="pop-presets" role="group" aria-label="Try an example">
+								<button type="button" data-fill="Meet at 3pm, room 4B">Note</button>
+								<button type="button" data-fill="API_KEY=sk_live_9fA2xK81mQ0zT7vBn4">API key</button>
+								<button type="button" data-fill="postgres://admin:hunter2@db.internal/app">DB URL</button>
+							</div>
+							<ul class="clips" id="clips" aria-label="Clipboard history"></ul>
+							<p class="pop-foot"><span id="count">5 items</span><span>Illustrative demo · nothing is sent anywhere</span></p>
+						</div>
+						<div class="toast" id="toast" role="status" aria-live="polite"></div>
+					</div>
+				</section>
+			</main>
+		</div>
+
+		<!-- ───── What it keeps ───── -->
+		<section class="band band-paper keeps" aria-labelledby="keeps-t">
+			<div class="wrap">
+				<h2 id="keeps-t">Remembers for a day. Keeps what you star.</h2>
+				<div class="track" role="img" aria-label="A 24-hour timeline: clips fade out after 24 hours, favorites are kept">
+					<div class="track-bar"><i style="--x:6%"></i><i style="--x:19%"></i><i style="--x:34%"></i><i style="--x:52%"></i><i style="--x:71%"></i></div>
+					<div class="track-end"><span class="fav">★</span> Favorites never expire</div>
+				</div>
+				<div class="cols">
+					<p><strong>Text and images.</strong> Everything you copy is saved, grouped into Text and Images. Search it, filter by All, Favorites, Text or Images, and sort by newest, oldest, largest or smallest.</p>
+					<p><strong>Gone after 24 hours.</strong> Unless you press <kbd>⌘</kbd><kbd>D</kbd>. Favorites stay until you unfavorite them, and can’t be deleted or cleared by accident.</p>
+					<p><strong>Always in the menu bar.</strong> Your latest copies are one click away. Close the window and ClipMac keeps running.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ───── Secrets ───── -->
+		<section class="band band-violet" id="secrets" aria-labelledby="sec-t">
+			<div class="wrap split">
+				<div>
+					<h2 id="sec-t">Secrets hide themselves.</h2>
+					<p class="big">API keys, tokens, passwords, JWTs, private keys and credentials in URLs are spotted in what you copy, and in your screenshots too, using on-device OCR.</p>
+					<p>Hidden clips show dots or black bars until you click Show. Drag, export, copy and the menu bar all use the hidden version.</p>
+					<p class="honest">Best effort, not a guarantee. It doesn’t cover credit card numbers, emails or phone numbers.</p>
+				</div>
+				<div class="demo-card">
+					<div class="switch-row">
+						<span id="sw-label">Auto-hide secrets</span>
+						<button class="switch" id="autohide" role="switch" aria-checked="true" aria-labelledby="sw-label"><i></i></button>
+					</div>
+					<ul class="plain" id="sec-list"></ul>
+					<p class="demo-note">Illustrative demo with made-up secrets.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ───── Screenshots ───── -->
+		<section class="band band-lime" id="screenshots" aria-labelledby="sc-t">
+			<div class="wrap split rev">
+				<div class="editor" aria-label="Editor preview">
+					<div class="stage" id="stage" data-bg="sunset">
+						<div class="shot" id="shot">
+							<div class="shot-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+							<pre class="shot-code" aria-label="Sample code with the token blacked out"><code>const client = connect(&#123;
+  host: "db.internal",
+  token: <span class="bar">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>,
+&#125;);</code></pre>
+						</div>
+					</div>
+					<div class="controls">
+						<fieldset>
+							<legend>Background</legend>
+							<div class="swatches">
+								<button type="button" class="sw sw-sunset" data-bg="sunset" aria-pressed="true" aria-label="Sunset gradient"></button>
+								<button type="button" class="sw sw-ocean" data-bg="ocean" aria-pressed="false" aria-label="Ocean gradient"></button>
+								<button type="button" class="sw sw-mint" data-bg="mint" aria-pressed="false" aria-label="Mint gradient"></button>
+								<button type="button" class="sw sw-ink" data-bg="ink" aria-pressed="false" aria-label="Solid ink"></button>
+								<button type="button" class="sw sw-clear" data-bg="clear" aria-pressed="false" aria-label="Transparent"></button>
+							</div>
+						</fieldset>
+						<label class="range">Padding <input type="range" id="pad" min="8" max="56" value="32" /></label>
+						<label class="range">Corner radius <input type="range" id="rad" min="0" max="28" value="12" /></label>
+					</div>
+					<p class="demo-note">Illustrative preview of the editor’s controls.</p>
+				</div>
+				<div>
+					<h2 id="sc-t">Screenshots that look finished.</h2>
+					<p class="big">Capture a selection, a window or the full screen at full Retina resolution, as a lossless PNG.</p>
+					<p>Set a delay, show the cursor, keep the window shadow, and give each mode its own global shortcut. Then dress it up in the built-in editor with a background, padding, corner radius, shadow, zoom and aspect ratio. Save a copy or overwrite.</p>
+					<p>Drag the result straight into Finder, Mail, Slack, Figma or a browser, or use Copy as File, or export PNG and JPEG.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ───── Code ───── -->
+		<section class="band band-ink" aria-labelledby="code-t">
+			<div class="wrap split">
+				<div>
+					<h2 id="code-t">Code gets tidied.</h2>
+					<p class="big">Copied code is detected automatically and shown with syntax highlighting and line numbers.</p>
+					<p>One Format button tidies JavaScript, TypeScript, JSON, CSS, SCSS, Less, HTML, Markdown, YAML (with Prettier) and Rust (with rustfmt). Copy the formatted version without changing the saved clip.</p>
+				</div>
+				<div class="demo-card dark">
+					<div class="code-head">
+						<span>clip.json</span>
+						<button class="btn-copy" id="fmt" type="button" aria-pressed="false">Format</button>
+					</div>
+					<pre class="code" id="code" tabindex="0" aria-live="polite"></pre>
+					<p class="demo-note">Illustrative demo.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ───── Keys ───── -->
+		<section class="band band-paper" aria-labelledby="keys-t">
+			<div class="wrap">
+				<h2 id="keys-t">Hands stay on the keys.</h2>
+				<ul class="keys">
+					{keys.map((r) => (
+						<li>
+							<span class="caps">{r.k.map((c) => <kbd>{c}</kbd>)}</span>
+							<span>{r.d}</span>
+						</li>
+					))}
+				</ul>
+				<p class="note">Screenshot shortcuts are yours to choose in the camera panel. Avoid <kbd>⌘</kbd><kbd>⇧</kbd><kbd>3</kbd>, <kbd>4</kbd> and <kbd>5</kbd>, which macOS keeps for itself.</p>
+			</div>
+		</section>
+
+		<!-- ───── Fine print ───── -->
+		<section class="band band-lilac" id="fine-print" aria-labelledby="fp-t">
+			<div class="wrap">
+				<h2 id="fp-t">The honest fine print.</h2>
+				<ul class="fine">
+					{fine.map((f) => (
+						<li><strong>{f.h}</strong><span>{f.t}</span></li>
+					))}
+				</ul>
+				<p class="cmd-label">If macOS blocks the first open:</p>
+				<pre class="cmd"><code>xattr -cr /Applications/ClipMac.app</code></pre>
+			</div>
+		</section>
+
+		<!-- ───── Close ───── -->
+		<section class="band band-violet close" aria-labelledby="dl-t">
+			<div class="wrap">
+				<img class="close-icon" src="/icon.png" width="96" height="96" alt="" />
+				<h2 id="dl-t">Copy once. Keep it a day.</h2>
+				<p class="big">ClipMac 1.0.1 for macOS, Apple Silicon and Intel. Free and open source under the MIT license.</p>
+				<a class="btn btn-lime btn-xl" href={RELEASES}>Download for Mac</a>
+			</div>
+		</section>
+
+		<footer class="foot">
+			<p>© ClipMac contributors · MIT License</p>
+			<nav aria-label="Footer">
+				<a href={REPO}>Source on GitHub</a>
+				<a href={`${REPO}/blob/main/SECURITY.md`}>Security</a>
+				<a href={`${REPO}/blob/main/CONTRIBUTING.md`}>Contribute</a>
+			</nav>
+		</footer>
+
+		<script>
+			const $ = (id) => document.getElementById(id);
+			const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			// Illustrative detector: a few common formats, not the app's full rule set.
+			const RULES = [
+				/\b(?:sk|pk|rk)_(?:live|test)_[A-Za-z0-9_]{8,}/g,
+				/\bgh[pousr]_[A-Za-z0-9]{16,}/g,
+				/\bAKIA[0-9A-Z]{12,}/g,
+				/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]*/g,
+				/(?<=(?:password|passwd|pwd|secret|token|api[_-]?key)\s*[=:]\s*)\S+/gi,
+				/(?<=:\/\/[^\s:@\/]+:)[^\s@\/]+(?=@)/g,
+			];
+			function split(text) {
+				const marks = [];
+				for (const re of RULES) for (const m of text.matchAll(re)) marks.push([m.index, m.index + m[0].length]);
+				marks.sort((a, b) => a[0] - b[0]);
+				const merged = [];
+				for (const m of marks) {
+					const last = merged[merged.length - 1];
+					if (last && m[0] <= last[1]) last[1] = Math.max(last[1], m[1]);
+					else merged.push(m.slice());
+				}
+				const parts = [];
+				let at = 0;
+				for (const [s, e] of merged) {
+					if (s > at) parts.push({ t: text.slice(at, s), secret: false });
+					parts.push({ t: text.slice(s, e), secret: true });
+					at = e;
+				}
+				if (at < text.length) parts.push({ t: text.slice(at), secret: false });
+				return parts;
+			}
+			const hasSecret = (t) => split(t).some((p) => p.secret);
+			function fill(el, text, hide) {
+				el.replaceChildren();
+				for (const p of split(text)) {
+					if (p.secret && hide) el.append(document.createTextNode('••••••••'));
+					else el.append(document.createTextNode(p.t));
+				}
+			}
+
+			const ICONS = {
+				text: '<path d="M4 6h12M4 10h12M4 14h8"/>',
+				link: '<path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-.8.8M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l.8-.8"/>',
+				key: '<path d="M10 2.5 16 5v4.5c0 3.6-2.5 6-6 7.5-3.5-1.5-6-3.9-6-7.5V5z"/><path d="m7.3 9.8 2 2 3.6-3.8"/>',
+				image: '<rect x="3" y="4" width="14" height="12" rx="2.5"/><circle cx="7.5" cy="8.5" r="1.3"/><path d="m4 14 4-3.5 3 2.5 2.5-2L17 14"/>',
+				code: '<path d="m7 6-4 4 4 4M13 6l4 4-4 4"/>',
+			};
+			const icon = (k) => `<svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[k]}</svg>`;
+			const kindOf = (t) => (hasSecret(t) ? 'key' : /^https?:\/\/|^[\w-]+\.[a-z]{2,}\/\S+/i.test(t) ? 'link' : /[{};=]|=>/.test(t) ? 'code' : 'text');
+
+			// ───── Hero popover ─────
+			let uid = 0;
+			const clips = [
+				{ id: uid++, kind: 'text', text: 'Standup moved to 3pm, room 4B', age: 2 },
+				{ id: uid++, kind: 'link', text: 'github.com/coros-hq/clipmac', age: 14 },
+				{ id: uid++, kind: 'key', text: 'STRIPE_KEY=sk_live_51NfK2xQ8mZ0tR7vBn4', age: 38 },
+				{ id: uid++, kind: 'image', text: 'Screenshot.png', age: 95 },
+				{ id: uid++, kind: 'code', text: 'const total = items.reduce(add, 0);', age: 190 },
+			];
+			const list = $('clips');
+			const shown = new Set();
+			const faved = new Set();
+			const ageLabel = (m) => (m < 1 ? 'now' : m < 60 ? `${m}m` : `${Math.floor(m / 60)}h`);
+
+			function render(newId) {
+				list.replaceChildren();
+				for (const c of clips) {
+					const secret = c.kind !== 'image' && hasSecret(c.text);
+					const li = document.createElement('li');
+					li.className = 'clip' + (c.id === newId && !reduce ? ' fresh' : '');
+					const copy = document.createElement('button');
+					copy.className = 'clip-main';
+					copy.type = 'button';
+					copy.setAttribute('aria-label', 'Copy again: ' + (secret && !shown.has(c.id) ? 'hidden secret' : c.text));
+					const ico = document.createElement('span');
+					ico.className = 'ico ico-' + c.kind;
+					ico.innerHTML = icon(c.kind);
+					const body = document.createElement('span');
+					body.className = 'clip-text';
+					if (c.kind === 'image') {
+						const th = document.createElement('i');
+						th.className = 'thumb';
+						body.append(th, document.createTextNode(c.text));
+					} else {
+						fill(body, c.text, secret && !shown.has(c.id));
+						if (c.kind === 'code') body.classList.add('mono');
+					}
+					const meta = document.createElement('span');
+					meta.className = 'clip-meta';
+					meta.textContent = faved.has(c.id) ? 'kept' : ageLabel(c.age);
+					copy.append(ico, body, meta);
+					copy.addEventListener('click', () => toast(secret && !shown.has(c.id) ? 'Copied (hidden version)' : 'Copied'));
+					li.append(copy);
+					if (secret) {
+						const s = document.createElement('button');
+						s.type = 'button';
+						s.className = 'mini';
+						s.textContent = shown.has(c.id) ? 'Hide' : 'Show';
+						s.addEventListener('click', () => { shown.has(c.id) ? shown.delete(c.id) : shown.add(c.id); render(); });
+						li.append(s);
+					}
+					const f = document.createElement('button');
+					f.type = 'button';
+					f.className = 'star' + (faved.has(c.id) ? ' on' : '');
+					f.setAttribute('aria-pressed', String(faved.has(c.id)));
+					f.setAttribute('aria-label', 'Favorite');
+					f.textContent = '★';
+					f.addEventListener('click', () => { faved.has(c.id) ? faved.delete(c.id) : faved.add(c.id); render(); });
+					li.append(f);
+					list.append(li);
+				}
+				$('count').textContent = `${clips.length} items`;
+			}
+			let toastT;
+			function toast(msg) {
+				const t = $('toast');
+				t.textContent = msg;
+				t.classList.add('on');
+				clearTimeout(toastT);
+				toastT = setTimeout(() => t.classList.remove('on'), 1400);
+			}
+			$('add').addEventListener('submit', (e) => {
+				e.preventDefault();
+				const input = $('clip');
+				const text = input.value.trim();
+				if (!text) return;
+				const id = uid++;
+				clips.unshift({ id, kind: kindOf(text), text, age: 0 });
+				if (clips.length > 7) clips.pop();
+				input.value = '';
+				render(id);
+				toast(hasSecret(text) ? 'Saved, secret hidden' : 'Saved');
+			});
+			document.querySelectorAll('.pop-presets button').forEach((b) =>
+				b.addEventListener('click', () => { $('clip').value = b.dataset.fill; $('clip').focus(); })
+			);
+			render();
+			$('mb-time').textContent = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+			// ───── Secrets demo ─────
+			const secrets = ['DATABASE_URL=postgres://admin:hunter2@db.internal/app', 'Lunch at noon?', 'Authorization: token ghp_Q8mZ4tVn2LxK7wB1cD9eF3gH5j'];
+			const sw = $('autohide');
+			function paintSecrets() {
+				const on = sw.getAttribute('aria-checked') === 'true';
+				const ul = $('sec-list');
+				ul.replaceChildren();
+				for (const t of secrets) {
+					const li = document.createElement('li');
+					const k = kindOf(t);
+					const i = document.createElement('span');
+					i.className = 'ico ico-' + k;
+					i.innerHTML = icon(k);
+					const s = document.createElement('span');
+					s.className = 'clip-text';
+					fill(s, t, on);
+					li.append(i, s);
+					ul.append(li);
+				}
+			}
+			sw.addEventListener('click', () => { sw.setAttribute('aria-checked', String(sw.getAttribute('aria-checked') !== 'true')); paintSecrets(); });
+			paintSecrets();
+
+			// ───── Editor preview ─────
+			const stage = $('stage');
+			const shot = $('shot');
+			document.querySelectorAll('.sw').forEach((b) =>
+				b.addEventListener('click', () => {
+					stage.dataset.bg = b.dataset.bg;
+					document.querySelectorAll('.sw').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+				})
+			);
+			$('pad').addEventListener('input', (e) => stage.style.setProperty('--pad', e.target.value + 'px'));
+			$('rad').addEventListener('input', (e) => shot.style.setProperty('--rad', e.target.value + 'px'));
+
+			// ───── Format demo ─────
+			const raw = '{"name":"clipmac","version":"1.0.1","local":true,"tags":["clipboard","screenshots"]}';
+			const pretty = JSON.stringify(JSON.parse(raw), null, 2);
+			const fmt = $('fmt');
+			const code = $('code');
+			code.textContent = raw;
+			fmt.addEventListener('click', () => {
+				const on = fmt.getAttribute('aria-pressed') !== 'true';
+				fmt.setAttribute('aria-pressed', String(on));
+				fmt.textContent = on ? 'Original' : 'Format';
+				code.textContent = on ? pretty : raw;
+			});
+		</script>
+
+		<style is:global>
+			:root {
+				--violet: #5a3cf0;
+				--violet-deep: #2b1b9e;
+				--lime: #cdf564;
+				--ink: #15112e;
+				--ink-2: #4a4668;
+				--paper: #fbfaff;
+				--lilac: #e9e4ff;
+
+				--display: 'Bricolage Grotesque', 'Helvetica Neue', sans-serif;
+				--body: 'Onest', system-ui, sans-serif;
+				--mono: 'JetBrains Mono', ui-monospace, monospace;
+
+				--ease: cubic-bezier(0.16, 1, 0.3, 1);
+				--spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+				color-scheme: light;
+			}
+			* { box-sizing: border-box; margin: 0; }
+			html { scroll-behavior: smooth; scrollbar-color: var(--violet) var(--lilac); }
+			body { background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+			::selection { background: var(--lime); color: var(--ink); }
+			a { color: inherit; text-underline-offset: 0.2em; }
+			:focus-visible { outline: 3px solid var(--lime); outline-offset: 3px; }
+			.band-paper :focus-visible, .band-lilac :focus-visible, .band-lime :focus-visible, .pop :focus-visible, .demo-card:not(.dark) :focus-visible { outline-color: var(--violet); }
+			.sr, .skip { position: absolute; left: -999px; }
+			.skip:focus { left: 0; top: 0; background: var(--lime); color: var(--ink); padding: 0.6rem 1rem; z-index: 20; }
+			h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -0.03em; text-wrap: balance; }
+			kbd { font: 500 0.85em/1 var(--mono); background: #fff; color: var(--ink); border: 1.5px solid rgba(21,17,46,0.25); border-bottom-width: 3px; border-radius: 7px; padding: 0.25em 0.5em; margin: 0 1px; }
+
+			/* ───── Hero ───── */
+			.hero { background: var(--violet); color: #fff; overflow: clip; position: relative; }
+			.hero::before, .hero::after { content: ''; position: absolute; border-radius: 50%; pointer-events: none; }
+			.hero::before { width: 46rem; height: 46rem; right: -14rem; top: -16rem; background: #7a5cff; }
+			.hero::after { width: 22rem; height: 22rem; left: -9rem; bottom: -9rem; background: var(--violet-deep); }
+			.bar, main { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; padding-inline: 1.5rem; }
+			.bar { display: flex; align-items: center; justify-content: space-between; padding-top: 1.4rem; }
+			.brand { display: flex; align-items: center; gap: 0.65rem; text-decoration: none; font: 800 1.45rem/1 var(--display); letter-spacing: -0.02em; }
+			.brand img { border-radius: 10px; }
+			.bar nav { display: flex; align-items: center; gap: 1.8rem; font-weight: 500; font-size: 0.975rem; }
+			.bar nav a { text-decoration: none; opacity: 0.9; }
+			.bar nav a:hover { opacity: 1; text-decoration: underline; }
+			.bar nav .gh { background: rgba(255,255,255,0.16); padding: 0.5rem 1rem; border-radius: 999px; opacity: 1; }
+			.bar nav .gh:hover { background: rgba(255,255,255,0.26); text-decoration: none; }
+
+			.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 28rem); gap: 3.5rem; align-items: center; padding-block: 3.2rem 5rem; }
+			h1 { font-size: clamp(3.1rem, 6.6vw, 5.6rem); line-height: 0.96; }
+			.lead { margin-top: 1.4rem; max-width: 33rem; font-size: 1.2rem; color: #ece8ff; }
+			.cta-row { margin-top: 2rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; }
+			.cta-note { font-size: 0.9rem; line-height: 1.5; color: #e1dbff; }
+			.btn {
+				display: inline-flex; align-items: center; gap: 0.6rem; text-decoration: none; cursor: pointer;
+				font: 700 1.15rem/1 var(--display); letter-spacing: -0.01em; padding: 1.05rem 1.7rem; border-radius: 999px;
+				transition: transform 0.35s var(--spring), box-shadow 0.35s var(--ease);
+			}
+			.btn-lime { background: var(--lime); color: var(--ink); box-shadow: 0 6px 0 #8fb52a, 0 14px 24px -10px rgba(10, 5, 60, 0.6); }
+			.btn-lime:hover { transform: translateY(-3px) rotate(-1.5deg); box-shadow: 0 9px 0 #8fb52a, 0 18px 28px -10px rgba(10, 5, 60, 0.6); }
+			.btn-lime:active { transform: translateY(4px); box-shadow: 0 2px 0 #8fb52a; }
+			.btn-xl { font-size: 1.6rem; padding: 1.4rem 2.4rem; margin-top: 2rem; }
+
+			/* ───── Desk + popover ───── */
+			.desk { position: relative; }
+			.menubar {
+				display: flex; align-items: center; justify-content: flex-end; gap: 0.35rem; height: 2rem; padding: 0 0.7rem;
+				background: rgba(21, 17, 46, 0.55); backdrop-filter: blur(12px); border-radius: 10px 10px 0 0; font: 500 0.8rem/1 var(--body); color: #fff;
+			}
+			.mb-apple { margin-right: auto; width: 0.8rem; height: 0.8rem; border-radius: 50%; background: rgba(255,255,255,0.8); }
+			.mb-item { display: inline-flex; align-items: center; padding: 0.25rem 0.5rem; border-radius: 6px; }
+			.mb-on { background: rgba(255,255,255,0.28); }
+			.pop {
+				margin-top: 0.5rem; background: #fff; color: var(--ink); border-radius: 20px; padding: 0.9rem 0.9rem 0.7rem;
+				box-shadow: 0 30px 50px -20px rgba(8, 3, 70, 0.8), 0 0 0 1px rgba(21,17,46,0.06);
+				rotate: 1.2deg;
+			}
+			.pop-add { display: flex; gap: 0.5rem; }
+			.pop-add input { flex: 1; min-width: 0; font: 500 1rem/1 var(--body); padding: 0.8rem 1rem; border-radius: 12px; border: 2px solid var(--lilac); background: var(--paper); color: var(--ink); }
+			.pop-add input:focus { outline: none; border-color: var(--violet); background: #fff; }
+			.btn-copy { font: 700 0.95rem/1 var(--display); background: var(--violet); color: #fff; border: 0; border-radius: 12px; padding: 0 1.1rem; cursor: pointer; transition: transform 0.3s var(--spring), background-color 0.2s; }
+			.btn-copy:hover { background: var(--violet-deep); transform: scale(1.05); }
+			.btn-copy:active { transform: scale(0.96); }
+			.pop-presets { display: flex; gap: 0.4rem; margin-top: 0.55rem; }
+			.pop-presets button { font: 500 0.8rem/1 var(--body); color: var(--violet-deep); background: var(--lilac); border: 0; border-radius: 999px; padding: 0.45rem 0.8rem; cursor: pointer; transition: transform 0.3s var(--spring); }
+			.pop-presets button:hover { transform: translateY(-2px) rotate(-2deg); }
+			.clips { list-style: none; padding: 0; margin-top: 0.7rem; display: grid; gap: 2px; }
+			.clip { display: flex; align-items: center; gap: 0.2rem; border-radius: 12px; }
+			.clip:hover { background: var(--paper); }
+			.clip.fresh { animation: drop 0.55s var(--spring) both; }
+			@keyframes drop { from { opacity: 0; transform: translateY(-14px) scale(0.96); } to { opacity: 1; transform: none; } }
+			.clip-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.7rem; background: none; border: 0; text-align: left; font: inherit; color: inherit; padding: 0.55rem 0.5rem; border-radius: 12px; cursor: pointer; }
+			.ico { flex: none; width: 2rem; height: 2rem; border-radius: 10px; display: grid; place-items: center; background: var(--lilac); color: var(--violet); }
+			.ico-key { background: #ffe2dd; color: #b3200f; }
+			.ico-image { background: #dcf6a8; color: #3b5a00; }
+			.ico-code { background: #d9eafe; color: #0b4a8f; }
+			.ico-link { background: #ffeccc; color: #8a4b00; }
+			.clip-text { flex: 1; min-width: 0; font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 0.5rem; }
+			.clip-text.mono { font: 500 0.85rem/1.2 var(--mono); }
+			.thumb { flex: none; width: 2.1rem; height: 1.4rem; border-radius: 5px; background: linear-gradient(135deg, #ff7a59, #7a1f5c); }
+			.clip-meta { flex: none; font-size: 0.75rem; color: var(--ink-2); background: var(--paper); padding: 0.2rem 0.5rem; border-radius: 999px; }
+			.mini { font: 500 0.75rem/1 var(--body); border: 1.5px solid var(--violet); color: var(--violet); background: none; border-radius: 999px; padding: 0.35rem 0.6rem; cursor: pointer; }
+			.mini:hover { background: var(--violet); color: #fff; }
+			.star { background: none; border: 0; font-size: 1.15rem; line-height: 1; color: #bdb7d8; cursor: pointer; padding: 0.45rem; border-radius: 8px; transition: transform 0.3s var(--spring), color 0.2s; }
+			.star:hover { transform: scale(1.25) rotate(12deg); color: #f0b400; }
+			.star.on { color: #f0b400; }
+			.pop-foot { margin-top: 0.5rem; display: flex; justify-content: space-between; gap: 1rem; font-size: 0.75rem; color: var(--ink-2); padding: 0.5rem 0.5rem 0; border-top: 1px solid var(--lilac); }
+			.toast {
+				position: absolute; left: 50%; bottom: -1.3rem; translate: -50% 0.6rem; opacity: 0; pointer-events: none;
+				background: var(--lime); color: var(--ink); font: 700 0.9rem/1 var(--display); padding: 0.7rem 1.1rem; border-radius: 999px;
+				box-shadow: 0 10px 20px -8px rgba(8,3,70,0.6); transition: opacity 0.2s, translate 0.35s var(--spring);
+			}
+			.toast.on { opacity: 1; translate: -50% 0; }
+
+			/* ───── Bands ───── */
+			.band { padding: 6rem 1.5rem; }
+			.wrap { max-width: 1240px; margin: 0 auto; }
+			.band h2 { font-size: clamp(2.4rem, 5vw, 4.2rem); line-height: 1; }
+			.band-paper { background: var(--paper); }
+			.band-lilac { background: var(--lilac); }
+			.band-violet { background: var(--violet); color: #fff; }
+			.band-lime { background: var(--lime); }
+			.band-ink { background: var(--ink); color: #fff; }
+			.big { font-size: 1.3rem; line-height: 1.5; margin-top: 1.4rem; max-width: 34rem; }
+			.split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 4rem; align-items: center; }
+			.split p:not(.big):not(.honest):not(.demo-note) { margin-top: 1rem; max-width: 34rem; }
+			.band-violet .split p, .band-ink .split p { color: #e6e1ff; }
+			.honest { margin-top: 1.4rem; display: inline-block; background: rgba(255,255,255,0.16); border-radius: 12px; padding: 0.7rem 1rem; font-size: 0.95rem; }
+			.demo-card { background: #fff; color: var(--ink); border-radius: 24px; padding: 1.5rem; box-shadow: 0 30px 50px -28px rgba(8,3,70,0.7); rotate: -1deg; }
+			.demo-card.dark { background: #221c47; color: #fff; }
+			.demo-note { margin-top: 1rem; font-size: 0.8rem; color: var(--ink-2); }
+			.dark .demo-note { color: #b9b2e6; }
+
+			.keeps h2 { max-width: 46rem; }
+			.track { margin-top: 3rem; }
+			.track-bar { position: relative; height: 1.2rem; border-radius: 999px; background: linear-gradient(90deg, var(--violet) 0%, var(--lilac) 100%); }
+			.track-bar i { position: absolute; top: 50%; left: var(--x); width: 1.9rem; height: 1.9rem; margin: -0.95rem 0 0 -0.95rem; border-radius: 50%; background: #fff; border: 4px solid var(--violet); }
+			.track-end { margin-top: 0.8rem; text-align: right; font: 700 1rem/1 var(--display); color: var(--violet-deep); }
+			.fav { color: #f0b400; }
+			.cols { margin-top: 3rem; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem; }
+			.cols p { color: var(--ink-2); }
+			.cols strong { display: block; font: 800 1.4rem/1.15 var(--display); letter-spacing: -0.02em; color: var(--ink); margin-bottom: 0.4rem; }
+
+			.switch-row { display: flex; align-items: center; justify-content: space-between; font: 700 1.1rem/1 var(--display); padding-bottom: 1rem; border-bottom: 2px solid var(--lilac); }
+			.switch { width: 3.4rem; height: 2rem; border-radius: 999px; border: 0; background: #cfc9ea; position: relative; cursor: pointer; transition: background-color 0.25s; }
+			.switch i { position: absolute; top: 0.25rem; left: 0.25rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.4s var(--spring); }
+			.switch[aria-checked='true'] { background: var(--violet); }
+			.switch[aria-checked='true'] i { transform: translateX(1.4rem); }
+			.plain { list-style: none; padding: 0; margin-top: 0.6rem; }
+			.plain li { display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 0; }
+			.plain li + li { border-top: 1px solid var(--lilac); }
+			.plain .clip-text { font-size: 1rem; }
+
+			.editor { display: grid; gap: 1rem; }
+			.stage { --pad: 32px; aspect-ratio: 4 / 3; display: grid; place-items: center; padding: var(--pad); overflow: hidden; border-radius: 24px; transition: background 0.3s var(--ease); box-shadow: 0 30px 50px -28px rgba(30, 40, 0, 0.7); }
+			.stage[data-bg='sunset'] { background: linear-gradient(135deg, #ff7a59, #c4301e 55%, #7a1f5c); }
+			.stage[data-bg='ocean'] { background: linear-gradient(135deg, #3aa0ff, #5a3cf0 60%, #2b1b9e); }
+			.stage[data-bg='mint'] { background: linear-gradient(135deg, #b8f2c9, #3fbf9a 60%, #1a7f78); }
+			.stage[data-bg='ink'] { background: var(--ink); }
+			.stage[data-bg='clear'] { background: conic-gradient(#e6e3f3 25%, #fff 0 50%, #e6e3f3 0 75%, #fff 0) 0 0 / 20px 20px; }
+			.shot { --rad: 12px; width: 100%; background: #16181f; color: #e8ebf5; border-radius: var(--rad); padding: 0.9rem 1.1rem 1.1rem; box-shadow: 0 18px 36px -10px rgba(0,0,0,0.55); }
+			.shot-dots { display: flex; gap: 6px; margin-bottom: 0.7rem; }
+			.shot-dots i { width: 10px; height: 10px; border-radius: 50%; background: #5a5f72; }
+			.shot-code { font: 500 0.9rem/1.55 var(--mono); white-space: pre-wrap; color: #cfd5ea; }
+			.shot-code .bar { display: inline-block; background: #000; height: 1.05em; vertical-align: -0.15em; box-shadow: 0 0 0 1px #3a3f52; }
+			.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.6rem; align-items: end; }
+			.controls fieldset { grid-column: 1 / -1; border: 0; padding: 0; min-width: 0; }
+			.controls legend, .range { font: 700 0.95rem/1 var(--display); }
+			.swatches { margin-top: 0.6rem; display: flex; gap: 0.6rem; }
+			.sw { width: 2.6rem; height: 2.6rem; border-radius: 50%; border: 3px solid #fff; cursor: pointer; padding: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.25); transition: transform 0.3s var(--spring); }
+			.sw:hover { transform: scale(1.12); }
+			.sw[aria-pressed='true'] { outline: 3px solid var(--ink); outline-offset: 2px; }
+			.sw-sunset { background: linear-gradient(135deg, #ff7a59, #7a1f5c); }
+			.sw-ocean { background: linear-gradient(135deg, #3aa0ff, #2b1b9e); }
+			.sw-mint { background: linear-gradient(135deg, #b8f2c9, #1a7f78); }
+			.sw-ink { background: var(--ink); }
+			.sw-clear { background: conic-gradient(#d9d5ee 25%, #fff 0 50%, #d9d5ee 0 75%, #fff 0) 0 0 / 10px 10px; }
+			.range { display: grid; gap: 0.6rem; }
+			input[type='range'] { width: 100%; accent-color: var(--violet); height: 1.4rem; }
+			.band-lime .demo-note { color: #3d4a12; }
+
+			.code-head { display: flex; align-items: center; justify-content: space-between; font: 500 0.85rem/1 var(--mono); color: #b9b2e6; margin-bottom: 1rem; }
+			.code-head .btn-copy { background: var(--lime); color: var(--ink); padding: 0.7rem 1.1rem; }
+			.code { font: 500 0.95rem/1.6 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; color: #e8e3ff; min-height: 11rem; }
+
+			.keys { list-style: none; padding: 0; margin-top: 3rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.9rem 3rem; }
+			.keys li { display: flex; align-items: center; gap: 1.2rem; }
+			.caps { flex: none; min-width: 8.5rem; display: inline-flex; gap: 0.4rem; }
+			.keys kbd { font-size: 1.1rem; min-width: 2.6rem; text-align: center; padding: 0.7rem 0.6rem 0.6rem; border-radius: 10px; margin: 0; transition: transform 0.3s var(--spring); }
+			.keys li:hover kbd { transform: translateY(-3px); }
+			.note { margin-top: 2rem; color: var(--ink-2); max-width: 42rem; }
+
+			.fine { list-style: none; padding: 0; margin-top: 2.5rem; display: grid; gap: 1.6rem; max-width: 52rem; }
+			.fine li { display: grid; gap: 0.2rem; }
+			.fine strong { font: 800 1.35rem/1.2 var(--display); letter-spacing: -0.02em; }
+			.fine span { color: var(--ink-2); }
+			.cmd-label { margin-top: 2rem; font-weight: 700; }
+			.cmd { margin-top: 0.5rem; background: var(--ink); color: var(--lime); border-radius: 14px; padding: 1.1rem 1.3rem; overflow-x: auto; max-width: 52rem; font: 500 1rem/1.5 var(--mono); }
+
+			.close { text-align: center; overflow: clip; position: relative; }
+			.close .wrap { display: flex; flex-direction: column; align-items: center; }
+			.close h2 { font-size: clamp(3rem, 8vw, 6.4rem); line-height: 0.95; margin-top: 1.5rem; max-width: 52rem; }
+			.close .big { color: #e6e1ff; }
+			.close-icon { border-radius: 24px; box-shadow: 0 20px 30px -12px rgba(8,3,70,0.7); }
+			.foot { background: var(--ink); color: #cfc9ee; padding: 1.6rem 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; font-size: 0.925rem; }
+			.foot nav { display: flex; flex-wrap: wrap; gap: 0.5rem 1.6rem; }
+
+			/* ───── Motion: one orchestrated entrance, then an idle bob on the closing icon ───── */
+			@media (prefers-reduced-motion: no-preference) {
+				.hero-copy > *, .desk { animation: rise 0.9s var(--ease) both; }
+				.hero-copy > :nth-child(2) { animation-delay: 0.08s; }
+				.hero-copy > :nth-child(3) { animation-delay: 0.16s; }
+				.desk { animation-delay: 0.22s; }
+				.close-icon { animation: bob 3.2s ease-in-out infinite; }
+				@keyframes rise { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+				@keyframes bob { 50% { transform: translateY(-10px) rotate(-4deg); } }
+			}
+			@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+			/* ───── Narrow ───── */
+			@media (max-width: 960px) {
+				.hero-grid, .split { grid-template-columns: 1fr; gap: 2.5rem; }
+				.split.rev .editor { order: 2; }
+				.cols { grid-template-columns: 1fr; gap: 1.8rem; }
+				.keys { grid-template-columns: 1fr; }
+				.pop, .demo-card { rotate: 0deg; }
+			}
+			@media (max-width: 640px) {
+				body { font-size: 1rem; }
+				.bar nav a:not(.gh) { display: none; }
+				.hero-grid { padding-block: 2rem 3.5rem; }
+				.band { padding: 4rem 1.1rem; }
+				.bar, main { padding-inline: 1.1rem; }
+				.btn { font-size: 1.05rem; }
+				.btn-xl { font-size: 1.3rem; padding: 1.2rem 1.8rem; }
+				.controls { grid-template-columns: 1fr; }
+				.pop-foot span:last-child { display: none; }
+				.caps { min-width: 7.5rem; }
+			}
+		</style>
+	</body>
+</html>
